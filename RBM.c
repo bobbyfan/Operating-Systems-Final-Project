@@ -6,12 +6,12 @@
 struct appointment
 {
 	//eg. Mee YYYY - MM - DD 09:00 2.0 tenant_A A
-    char service[3]; /* "Mee" for meeting, "Pre" for presentation, "Con" for conference, "Dev" for device */
-    char date[10]; /* YYYY-MM-DD*/
-    char time[5]; /* hh:mm*/
-    double duration; /* Duration of the appointment in hours, e.g. 2.0*/
-	char caller[8]; /* three tenants: "tenant_A", "tenant_B" and "tenant_C"*/
-    char room[1]; /* "A" or "B", represent room A, room B, can be empty*/
+    char service[10]; /* "Mee" for meeting, "Pre" for presentation, "Con" for conference, "Dev" for device */
+    char room[5]; /* "A" or "B", represent room A, room B, can be empty*/
+    char date[20]; /* YYYY-MM-DD*/
+    char time[10]; /* hh:mm*/
+    char duration[5]; /* Duration of the appointment in hours, e.g. 2.0*/
+	char caller[10]; /* three tenants: "tenant_A", "tenant_B" and "tenant_C"*/
 	char fac1[20]; /* specific facility, can be "webcam_720p" or "webcam_1080p" or "projector_fhd" or "projector_xga"*/
 	char fac2[20]; /* specific facility, can be "monitor_50" or "monitor_75" or "screen_100" or "screen_150".*/
 	int priority;/*smaller number, higher priority*/
@@ -23,45 +23,136 @@ struct appointment input(char array []){
 	/* not yet finished*/
 	struct appointment ap;
 	int i=0, j=0, k=0;
-	char temp[] = "MPCD";
+	char temp[] = "MPCDB;";
 	char *p;
+	char file[20];
+	char buf [1000];
+	FILE *fp;
 	
-	if (array[3] == temp[0] || array[3] == temp[2] || array[3] == temp[2]){
+	if (array[3] == temp[0] || array[3] == temp[1] || array[3] == temp[2]){
 		p = strtok (array, " ");
 		while (p != NULL){
 			if(i == 0){
-				strcpy(ap.service, p);//error
+				for ( j = 0; j < 3; j++){
+					ap.service[j] = p[j+3];
+				}
+				ap.service[j] = 0;
 			}
 			if(i == 1){
-				strcpy(ap.room, p);
+				for ( j = 0; j < sizeof(ap.room); j++){
+					ap.room[j] = p[j+6];
+				}
+				ap.room[j] = 0;
 			}
 			if(i == 2){
-				strcpy(ap.date, p);
+				for ( j = 0; j <= sizeof(ap.date); j++){
+					ap.date[j] = p[j];
+				}
+				ap.date[j] = 0;
 			}
 			if(i == 3){
-				strcpy(ap.time, p);
+				for ( j = 0; j <= sizeof(ap.time); j++){
+					ap.time[j] = p[j];
+				}
+				ap.time[j] = 0;
 			}
 			if(i == 4){
-				ap.duration = atof(p);
+				for ( j = 0; j <= sizeof(ap.duration); j++){
+					ap.duration[j] = p[j];
+				}
+				ap.duration[j] = 0;
 			}
 			if(i == 5){
-				strcpy(ap.caller, p);
+				for ( j = 0; j <= sizeof(ap.caller); j++){
+					if (p[j] == temp[5]) break;
+					ap.caller[j] = p[j];
+				}
+				ap.caller[j] = 0;
 			}
 			if(i == 6){
-				strcpy(ap.fac1, p);
+				for ( j = 0; j <= sizeof(ap.fac1); j++){
+					ap.fac1[j] = p[j];
+				}
+				ap.fac1[j] = 0;
 			}
-			if(i == 6){
-				strcpy(ap.fac2, p);
+			if(i == 7){
+				for ( j = 0; j < sizeof(ap.fac2); j++){
+					if (p[j] == temp[5]) break;
+					ap.fac2[j] = p[j];
+				}
+				ap.fac2[j] = 0;
+			}
+			i++;
+			p = strtok (NULL, " ");
+		}
+		printf("\n");
+
+	}
+	
+	if (array[3] == temp[3]){
+		p = strtok (array, " ");
+		while (p != NULL){
+			if(i == 0){
+				for ( j = 0; j < 3; j++){
+					ap.service[j] = p[j+3];
+				}
+				ap.service[j] = 0;
+			}
+			if(i == 1){
+				for ( j = 0; j < sizeof(ap.fac1); j++){
+					ap.fac1[j] = p[j+1];
+				}
+				ap.fac1[j] = 0;
+			}
+			if(i == 2){
+				for ( j = 0; j <= sizeof(ap.date); j++){
+					ap.date[j] = p[j];
+				}
+				ap.date[j] = 0;
+			}
+			if(i == 3){
+				for ( j = 0; j <= sizeof(ap.time); j++){
+					ap.time[j] = p[j];
+				}
+				ap.time[j] = 0;
+			}
+			if(i == 4){
+				for ( j = 0; j <= sizeof(ap.duration); j++){
+					ap.duration[j] = p[j];
+				}
+				ap.duration[j] = 0;
+			
+			}
+			if(i == 5){
+				for ( j = 0; j <= sizeof(ap.caller); j++){
+					if (p[j] == temp[5]) break;
+					ap.caller[j] = p[j];
+				}
+				ap.caller[j] = 0;
 			}
 			i++;
 			p = strtok (NULL, " ");
 		}
 	}
 	
+	if (array[3] == temp[4]){
+		for ( j = 0; j <= sizeof(array); j++){
+			if (file[j] == temp[5]) break;
+			file[j] = array[j+10];
+		}
+		file[j] = 0;
+		
+		fp = fopen( file , "r");
+		if (!fp) printf("%s", file);
+		
+		fgets (buf, sizeof(buf), fp);
+		printf("line:%s", buf);
+
+	}
 	return ap;
 
-
 }
+
 
 void interface(){
 	int job=0;
@@ -193,39 +284,48 @@ int childfunction(char booked_time_date[4],int duration, int priority,int timesl
 	}
 }
 int main(){
-	int job = 0;
+	int job=0;
 	char in[200];
-	char firstchar[3] = "ape", methodchar[3] = "fpo";
+	char firstchar[4] = "apeA", methodchar[3] = "fpo";
 	struct appointment ap[100];/*Array of struct, The max number of appoinment is 100*/
-
+	
 	printf("~~ WELCOME TO PolySME ~~\n");
-	while (1){
-
+	while(1){
+		
 		printf("Please enter booking: \n");
-		fgets(in, sizeof(in), stdin);
-
-		if (in[0] == firstchar[1]/*p*/){
-			if (in[11] == methodchar[0]/*f*/){
+		fgets ( in, sizeof (in), stdin);
+		
+		if (in[0] == firstchar[1]/*p*/ ){
+			if(in[17] == methodchar[0]/*f*/ ){
 				/* Use the fcfs*/
 			}
-			if (in[11] == methodchar[1]/*p*/){
+			if(in[17] == methodchar[1]/*p*/ ){
 				/* Use the prio*/
 			}
-			if (in[11] == methodchar[2]/*o*/){
+			if(in[17] == methodchar[2]/*o*/ ){
 				/* Use the opti*/
 			}
+			
+			printf("-> [Done!]");
+
 		}
-
-		if (in[0] == firstchar[2]/*e*/) break;
-
-		if (in[0] == firstchar[0]/*a*/){
+		
+		if (in[0] == firstchar[2]/*e*/ ) {
+			printf("-> Bye!\n");
+			break;
+		}
+		
+		if (in[0] == firstchar[0]/*a*/ ){
 			/* recevice the appointment and put into the appointment array*/
 			ap[job] = input(in);
-			printf("Input is %s", ap[job].caller);
+			//printf("%s %s %s %s %s %s %s %s\n", ap[job].service, ap[job].date, ap[job].time, ap[job].duration, ap[job].room, ap[job].caller, ap[job].fac1, ap[job].fac2);
 			job++;
+			
+			printf("-> [Pending]\n");
 		}
 		break;
 	}
+
 
 	int pNo = 13;//No. of child process
 	int i = 0;
